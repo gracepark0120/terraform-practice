@@ -10,11 +10,12 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-northeast-1"
+  profile = "personal"
+  region = "ap-south-1"
 
   max_retries = 5
 
   assume_role {
-    role_arn     = "arn:aws:iam:::role/assume-role-mgmt-atlantis"
+    role_arn     = "arn:aws:iam::{accountid}:role/terraformAssumedRole"
   }
 }

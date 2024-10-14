@@ -1,19 +1,12 @@
-variable "ami" {
-  description = "The AMI ID for the EC2 instance"
-  type        = string
+variable "bucket_name" {}
+variable "comment" {}
+variable "aws_s3_bucket_ownership_controls" {}
+variable "aws_s3_bucket_public_access_block" {}
+variable "aws_s3_bucket_acl" {}
+variable "enable_aws_s3_public" {
+  type        = bool
+  default     = false
 }
-
-variable "instance_type" {
-  description = "The EC2 instance type"
-  type        = string
-  default     = "t2.micro"
-}
-
-variable "ec2_instance_name" {
-  description = "The name tag for the EC2 instance"
-  type        = string
-}
-
 variable "lambda_name" {
   description = "Name of the Lambda function"
   type        = string
