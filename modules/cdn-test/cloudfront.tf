@@ -3,7 +3,7 @@ resource "aws_cloudfront_origin_access_identity" "this" { ## OAI는 CloudFront�
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
-  depends_on = [aws_s3_bucket.this, aws_lambda_function.my_lambda_edge_function]  # S3 버킷이 먼저 생성되도록 설정
+  depends_on = [aws_s3_bucket.this]  # S3 버킷이 먼저 생성되도록 설정
   origin { ## cloudfront s3 연결, OAI 로 cloudfront 를 통해서만 s3 버킷 접근 가능하게 설정
     domain_name = aws_s3_bucket.this.bucket_domain_name
     origin_id   = aws_s3_bucket.this.id
@@ -26,22 +26,26 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
 
     # 캐시 정책 및 오리진 요청 정책 추가
-    cache_policy_id            = aws_cloudfront_cache_policy.custom_cache_policy.id 
-    origin_request_policy_id   = var.origin_request_policy_id
-    response_headers_policy_id = var.response_headers_policy_id
+    cache_policy_id            = var.cache_policy_id != "" ? var.cache_policy_id : null
 
+    # 오리진 요청 정책: 사용자가 값을 제공하지 않으면 설정하지 않음
+    origin_request_policy_id   = var.origin_request_policy_id != "" ? var.origin_request_policy_id : null
 
-    lambda_function_association {
-      lambda_arn   = var.lambda_edge_viewer_response_arn != "" ? var.lambda_edge_viewer_response_arn : null
-      event_type = "viewer-response"
-      include_body = false
-    }
+    # 응답 헤더 정책: 사용자가 값을 제공하지 않으면 설정하지 않음
+    response_headers_policy_id = var.response_headers_policy_id != "" ? var.response_headers_policy_id : null
+  
+    # 람다
+    # lambda_function_association {
+    #   lambda_arn   = var.lambda_edge_viewer_response_arn != "" ? var.lambda_edge_viewer_response_arn : null
+    #   event_type = "viewer-response"
+    #   include_body = false
+    # }
 
-    lambda_function_association {
-      lambda_arn   = var.lambda_edge_origin_response_arn != "" ? var.lambda_edge_origin_response_arn : null
-      event_type = "origin-response"
-      include_body = false
-    }
+    # lambda_function_association {
+    #   lambda_arn   = var.lambda_edge_origin_response_arn != "" ? var.lambda_edge_origin_response_arn : null
+    #   event_type = "origin-response"
+    #   include_body = false
+    # }
 
 
   }
@@ -59,6 +63,9 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 }
+
+
+
 
 ## s3 버킷 도메인 이름을 cloudfront 원본으로 지정
 ## cloudfront 는 이 s3 버킷에서 콘텐츠 가져와서 사용자에게세 제공
