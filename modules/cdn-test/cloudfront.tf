@@ -1,7 +1,9 @@
 resource "aws_cloudfront_origin_access_identity" "this" { ## OAI는 CloudFront에서 S3 버킷과의 연결 시 S3 버킷에 직접 접근하지 않고, CloudFront를 통해서만 접근하게 만드는 보안 설정
   comment = var.comment
 }
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  depends_on = [aws_s3_bucket.this, aws_lambda_function.my_lambda_edge_function]  # S3 버킷이 먼저 생성되도록 설정
   origin { ## cloudfront s3 연결, OAI 로 cloudfront 를 통해서만 s3 버킷 접근 가능하게 설정
     domain_name = aws_s3_bucket.this.bucket_domain_name
     origin_id   = aws_s3_bucket.this.id
@@ -11,26 +13,44 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
-  enabled = true
+  enabled             = true
+  is_ipv6_enabled     = false
+  comment             = var.comment
+  aliases = var.aliases
 
+  
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "myOrigin"
+    target_origin_id = aws_s3_bucket.this.id
+    viewer_protocol_policy = "redirect-to-https"
 
-    forwarded_values {
-      query_string = false
-    
-      cookies {
-          forward = "none"  # 쿠키를 전달하지 않음 (필요시 'all' 또는 'whitelist'로 변경)
-      }
+    # 캐시 정책 및 오리진 요청 정책 추가
+    cache_policy_id            = aws_cloudfront_cache_policy.custom_cache_policy.id 
+    origin_request_policy_id   = var.origin_request_policy_id
+    response_headers_policy_id = var.response_headers_policy_id
+
+
+    lambda_function_association {
+      lambda_arn   = var.lambda_edge_viewer_response_arn != "" ? var.lambda_edge_viewer_response_arn : null
+      event_type = "viewer-response"
+      include_body = false
     }
 
-    viewer_protocol_policy = "redirect-to-https"
+    lambda_function_association {
+      lambda_arn   = var.lambda_edge_origin_response_arn != "" ? var.lambda_edge_origin_response_arn : null
+      event_type = "origin-response"
+      include_body = false
+    }
+
+
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate.cert.arn  # ACM에서 발급받은 인증서 참조
+    ssl_support_method  = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2018"
+    cloudfront_default_certificate = false
   }
 
   restrictions {
@@ -44,3 +64,4 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 ## cloudfront 는 이 s3 버킷에서 콘텐츠 가져와서 사용자에게세 제공
 ## cloudfront 는 기본적으로 도메인 이름 생성됨
 ## route 53 에서 alias 레코드 생성해서 사용자 도메인을 cloudfront 도메인으로 연결 가능.
+## 
