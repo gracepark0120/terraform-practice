@@ -2,10 +2,7 @@ module "multi_resource_module" {
   source = "../modules/cdn-test"
   bucket_name = "grace-cdn-test-test"
   comment = "grace-cdn-test-test.gracehpark.shop"
-  aws_s3_bucket_ownership_controls = ""
-  aws_s3_bucket_public_access_block = ""
-  aws_s3_bucket_acl = ""
-
+  
   cache_policy_id            = aws_cloudfront_cache_policy.cdn-cahce-test.id  #CachingOptimized
   origin_request_policy_id   = "" 
   response_headers_policy_id = ""
@@ -16,14 +13,20 @@ module "multi_resource_module" {
   aliases                      = ["grace-cdn-test-test.gracehpark.shop"] 
   domain_name                  = "grace-cdn-test-test.gracehpark.shop"  # Route 53 도메인 이름
   zone_id                      = "Z04134461GZON1SRR54AP"  # Route 53 호스팅 존 ID
+
+  enable_aws_s3_public = false
+  aws_s3_bucket_ownership_controls = ""
+  aws_s3_bucket_public_access_block = ""
+  aws_s3_bucket_acl = ""
+  # 버전 명시 필요
+  lambda_edge_viewer_response_arn = "arn:aws:lambda:us-east-1:575841859611:function:setting-json-custom-headers:1"
+  lambda_edge_origin_response_arn = "arn:aws:lambda:us-east-1:575841859611:function:setting-json-custom-headers:1"
+
 }
-
-
 ### policy6
 # cache policy
 resource "aws_cloudfront_cache_policy" "cdn-cahce-test" {
   name = "cdn-cahce-test"
-  
 
   default_ttl = 3  # 기본 TTL
   max_ttl     = 3      # 최대 TTL

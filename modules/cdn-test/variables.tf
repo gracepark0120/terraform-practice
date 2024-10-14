@@ -26,16 +26,16 @@ variable "enable_aws_s3_public" {
 #   type        = string
 # }
 
-# # lambda edge 설정
-# variable "lambda_edge_viewer_response_arn" {
-#   type        = string
-#   default     = ""
-# }
+# lambda edge 설정
+variable "lambda_edge_viewer_response_arn" {
+  type        = string
+  default     = ""
+}
 
-# variable "lambda_edge_origin_response_arn" {
-#   type        = string
-#   default     = ""
-# }
+variable "lambda_edge_origin_response_arn" {
+  type        = string
+  default     = ""
+}
 
 variable "cache_policy_id" {
   type    = string

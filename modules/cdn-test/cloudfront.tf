@@ -35,17 +35,17 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     response_headers_policy_id = var.response_headers_policy_id != "" ? var.response_headers_policy_id : null
   
     # 람다
-    # lambda_function_association {
-    #   lambda_arn   = var.lambda_edge_viewer_response_arn != "" ? var.lambda_edge_viewer_response_arn : null
-    #   event_type = "viewer-response"
-    #   include_body = false
-    # }
+    lambda_function_association {
+      lambda_arn   = var.lambda_edge_viewer_response_arn != "" ? var.lambda_edge_viewer_response_arn : null
+      event_type = "viewer-response"
+      include_body = false
+    }
 
-    # lambda_function_association {
-    #   lambda_arn   = var.lambda_edge_origin_response_arn != "" ? var.lambda_edge_origin_response_arn : null
-    #   event_type = "origin-response"
-    #   include_body = false
-    # }
+    lambda_function_association {
+      lambda_arn   = var.lambda_edge_origin_response_arn != "" ? var.lambda_edge_origin_response_arn : null
+      event_type = "origin-response"
+      include_body = false
+    }
 
 
   }
