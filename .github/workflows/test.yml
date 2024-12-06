@@ -1,0 +1,47 @@
+name: Test Here-Document and Curl
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test_script:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+
+    - name: Set up environment variables
+      run: |
+        echo "STATUS=success" >> $GITHUB_ENV
+        echo "URL=https://example.com" >> $GITHUB_ENV
+        echo "EUM_AGENT_VERSION=1.0.0" >> $GITHUB_ENV
+        echo "NAME=TestApp" >> $GITHUB_ENV
+
+    - name: Test Here-Document and Curl
+      run: |
+        TEMP_FILE=$(mktemp)
+
+        # Create JSON with here-document
+        cat <<EOF > $TEMP_FILE
+        {
+          "attachments": [
+            {
+              "color" : "#0000FF",
+              "title": "${env.NAME}-deployed",
+              "text": "*invalidations $STATUS*\n$URL\n$EUM_AGENT_VERSION",
+              "footer": "SRE",
+              "ts": "$(date +%s)"
+            }
+          ]
+        }
+        EOF
+
+        # Output the contents of the file (for debugging)
+        cat $TEMP_FILE
+
+        # Send POST request to Slack (replace with your actual Slack Webhook URL)
+        curl -X POST -H 'Content-type: application/json' --data @"$TEMP_FILE" https://hooks.slack.com/services/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
+
+        # Clean up
+        rm -f $TEMP_FILE
