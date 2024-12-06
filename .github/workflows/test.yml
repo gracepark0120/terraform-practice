@@ -28,11 +28,11 @@ jobs:
           "attachments": [
             {
               "color" : "#0000FF",
-              "title": "${env.NAME}-deployed",
-              "text": "*invalidations $STATUS*\n$URL\n$EUM_AGENT_VERSION",
+              "title": "deployed",
+              "text": "*'"invalidations $STATUS"'*\n'"$URL"' \n'"$EUM_AGENT_VERSION"'",
               "footer": "SRE",
               "ts": "$(date +%s)"
-            }
+            } 
           ]
         }
         EOF
